@@ -7,3 +7,8 @@ HEADERS = {
     'Accept-Language': 'en',
     'origin': 'http://stats.nba.com'
 }
+
+CURRENT_SEASON = "2017-18"
+
+BASE_STATS_URL = "http://stats.nba.com/stats/"
+SHOTCHART_PARAM = "shotchartdetail?"
