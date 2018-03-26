@@ -1,12 +1,16 @@
 from utils import constants
 from collections import OrderedDict
+import pandas as pd
+import requests
+from utils import constants
+
 
 class ApiRetriever:
 
-    def __init__(self, period=0, vs_conference="", league_ID=00, last_n_games=0, team_id=0, location="", outcome="",
-                 context_measure="FGA", date_from="", date_to="", opponent_team_id=0, range_type="",
+    def __init__(self, period=0, vs_conference="", league_ID="00", last_n_games=0, team_id=0, location="", outcome="",
+                 context_measure="FGA", date_from="", date_to="", opponent_team_id=0, range_type=0,
                  season=constants.CURRENT_SEASON, ahead_behind="", player_id=0, vs_division="", point_diff="",
-                 rookie_year="", game_segment="", month=0, clutch_time="", season_type="", season_segment="",
+                 rookie_year="", game_segment="", month=0, clutch_time="", season_type="Regular Season", season_segment="",
                  game_id="", player_position=""):
         """
         Constructor for retriever of data.
@@ -22,7 +26,7 @@ class ApiRetriever:
         :param date_from: Date in format mm-dd-yyyy.
         :param date_to: Date in format mm-dd-yyyy.
         :param opponent_team_id: Opponent team id, to filter games only vs specific team, default 0, means don't filter.
-        :param range_type: 0 for all shots and areas, 1 and 2 for areas only, default 0.
+        :param range_type: 0 for all shots, 1 and 2 for areas only, default 0.
         :param season: Format of yyyy-yy.
         :param ahead_behind: One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied' or empty.
         :param player_id: Player ID from NBA's database, obligatory.
@@ -100,6 +104,7 @@ class ApiRetriever:
         Builds dictionary which has string keys mapped to values of parameters which are assigned to it.
         :return:
         """
+        self.param_dict["Period="] = self.period
         self.param_dict["VsConference="] = self.vs_conference
         self.param_dict["LeagueID="] = self.league_ID
         self.param_dict["LastNGames="] = self.last_n_games
@@ -142,3 +147,39 @@ class ApiRetriever:
             if i != length:
                 url += "&"
         return url
+
+
+    def load_nba_dataset(self, json_data):
+        """
+        Loads the dataset from given json data, here the data which is extracted is based on range type parameter.
+        If it's set to zero then the shots from player will be extracted, otherwise the league averages will be extracted.
+        :param json_data: Json data from where the shots will be extracted only
+        :return: Pandas data frame
+        """
+        index = 0 if self.range_type == 0 else 1
+        result_data = json_data['resultSets'][index]
+        headers = result_data['headers']
+        shots = result_data['rowSet']
+        data_frame = pd.DataFrame(data=shots, columns=headers)
+        return data_frame
+
+    def get_json_from_url(self, url):
+        """
+        Fetches the json file from given url string
+        :param url: URL string for shots
+        :return: Json object
+        """
+        print(requests.get(url, headers=constants.HEADERS))
+        return requests.get(url, headers=constants.HEADERS).json()
+
+    def retrieve_data(self):
+        """
+        Method which gathers all the steps and retrieves the json for parameters that were set up for URL string
+        :return: Pandas data frame
+        """
+        # Getting url string
+        url = self.build_url_string()
+        # Retrieving json
+        json = self.get_json_from_url(url)
+        # Returning pandas data frame
+        return self.load_nba_dataset(json_data=json)
