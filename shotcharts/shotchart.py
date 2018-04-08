@@ -29,7 +29,7 @@ class Shotchart:
 
     # Amazing function by Bradley Fay for plotting the nba court
     # source: https://github.com/bradleyfay/py-Goldsberry/blob/master/docs/Visualizing%20NBA%20Shots%20with%20py-Goldsberry.ipynb
-    def draw_court(self, ax=None, color=self.color, lw=2, outer_lines=False):
+    def draw_court(self, ax=None, color="black", lw=2, outer_lines=False):
         """
         Method which is used for drawing the court lines on shotchart image.
         :param color: Color of the lines
@@ -373,4 +373,5 @@ class Shotchart:
         # Saving figure
         # plt.savefig('lebron.png', bbox_inches='tight')
         # colorbar.set_label('Comparison to league average percentages', color='#E2E2FF', size=16, coords=(1.5, 1.5))
-        plt.show()
+        # plt.show()
+        plt.savefig("sample.png", bbox_inches="tight")
