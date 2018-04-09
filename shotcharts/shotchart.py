@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import colors
+from collections import Counter
 import seaborn as sns
 from matplotlib.patches import Circle, Rectangle, Arc
 
@@ -105,33 +105,23 @@ class Shotchart:
         return ax
 
 
-    def create_bins(self, df, bin_number_x=30, bin_number_y=300 / (500.0 / 30.0), max_size_given=None, league_average=None,
-                    width=500, height=300, norm_x=250, norm_y=48):
+    def create_bins(self, df, bin_number_x=30, bin_number_y= 470 / (500.0 / 30.0), max_size_given=None, league_average=None,
+                    width=500, height=470, norm_x=250, norm_y=48.5):
         x_bins, y_bins = [], []
         copied_df = df.copy()
         keys = []
-        location_counts, location_made = {}, {}
+        location_counts, location_made = Counter(), Counter()
         locations_shots = {}  # real locations of shots which will be connected to bins and later arithmetic middle will
         # be found
-        bin_size_x = width / float(bin_number_x)
-        bin_size_y = height / float(bin_number_y)
+        bin_size_x = float(width) / float(bin_number_x)
+        bin_size_y = float(height) / float(bin_number_y)
+        print("bin size x: %f" % bin_size_x)
+        print("Bin size y: %f" % bin_size_y)
         locations_annotated = []
-        zones_counts, zones_made = {}, {}
+        zones_counts, zones_made = Counter(), Counter()
 
-        if bin_number_x < 20:
-            multiplier = 1
-        elif bin_number_x <= 25:
-            multiplier = 1.5
-        elif bin_number_x <= 30:
-            multiplier = 2
-        elif bin_number_x <= 45:
-            multiplier = 3
-        else:
-            multiplier = 4
-        if max_size_given is None:
-            max_size = float(multiplier * bin_size_x * bin_size_y)
-        else:
-            max_size = float(max_size_given)
+        calc_max_size = float((bin_size_x - 1) * (bin_size_y - 1))
+        max_size = max_size_given if max_size_given is not None else calc_max_size
 
         restricted_area_keys = []
 
@@ -153,15 +143,8 @@ class Shotchart:
                 restricted_area_keys.append(key)
 
             keys.append(key)
-            if key in location_counts:
-                location_counts[key] = location_counts[key] + 1
-            else:
-                location_counts[key] = 1
-
-            if key in location_made:
-                location_made[key] = location_made[key] + df.iloc[i].SHOT_MADE_FLAG
-            else:
-                location_made[key] = df.iloc[i].SHOT_MADE_FLAG
+            location_counts[key] += 1
+            location_made[key] += df.iloc[i].SHOT_MADE_FLAG
 
             if key in locations_shots:
                 locations_shots[key].append((x_shot_orig, y_shot_orig))
@@ -181,16 +164,10 @@ class Shotchart:
                 locations_annotated.append("R" + area_code)
 
             zone_key = (basic_shot_zone, shot_zone_area, zone_dist)
-            if zone_key not in zones_counts:
-                zones_counts[zone_key] = 1
-            else:
-                zones_counts[zone_key] = zones_counts[zone_key] + 1
+            zones_counts[zone_key] += 1
 
             if df.iloc[i].SHOT_MADE_FLAG:
-                if zone_key not in zones_made:
-                    zones_made[zone_key] = 1
-                else:
-                    zones_made[zone_key] = zones_made[zone_key] + 1
+                zones_made[zone_key] += 1
 
         shot_locations_percentage = []  # percentage in given bin
         shot_locations_counts = []
@@ -200,8 +177,10 @@ class Shotchart:
         plot_x, plot_y = [], []
         per_zone_percentage = []
 
+        max_shots_at_location = float(max(location_counts.values()))
+        # max_per_locations = 10.0
+        max_out_of_restricted, second_biggest = None, None
         restricted_area, non_ra = [], []
-        # Finding maximum occurrence out of restricted area
         for key in location_counts:
             if key not in restricted_area_keys:
                 if location_counts[key] not in non_ra:
@@ -211,8 +190,9 @@ class Shotchart:
 
         sorted_non_ra = sorted(non_ra)
         max_out_of_restricted, second_biggest = float(sorted_non_ra[-1]), float(sorted_non_ra[-2])
-        found_pairs = []
-        binned_found = []
+        restricted_area_sorted = restricted_area.sort(key=lambda x: x[0])
+        found_pairs = {}
+
 
         for j in range(len(df)):
             key = keys[j]
@@ -237,46 +217,40 @@ class Shotchart:
                 else:
                     per_zone_percentage.append(np.clip((zone_percent - avg_percentage) * 100, -20, 20))
 
-            if is_restricted:
+            """if is_restricted:
                 # Debug it
                 value_to_scale = max_out_of_restricted
+                curr_value = location_counts[key]
                 if location_counts[key] < max_out_of_restricted:
                     value_to_scale = second_biggest
-                shot_locations_counts.append(float(value_to_scale) / max_out_of_restricted * max_size)
-            else:
-                value_to_scale = location_counts[key]
-                if value_to_scale >= second_biggest:
-                    value_to_scale = second_biggest
-                shot_locations_counts.append(float(value_to_scale) / second_biggest * max_size)
+                shot_locations_counts.append( float(value_to_scale) / max_out_of_restricted * max_size )"""
 
-            # shot_locations_counts.append( location_counts[key] / max_shots_at_location * max_size )
+            value_to_scale = max_out_of_restricted if location_counts[key] > max_out_of_restricted else location_counts[key]
+            shot_locations_counts.append(float(value_to_scale) / max_out_of_restricted * max_size)
+
             raw_counts.append(location_counts[key])
 
-            all_x_locs = [x_loc for x_loc, y_loc in locations_shots[key]]
-            all_y_locs = [y_loc for x_loc, y_loc in locations_shots[key]]
+            # all_x_locs = [x_loc for x_loc, y_loc in locations_shots[key]]
+            # all_y_locs = [y_loc for x_loc, y_loc in locations_shots[key]]
 
             # binned_x, binned_y = np.mean(all_x_locs), np.mean(all_y_locs)
 
             x_bin, y_bin = key[0], key[1]
+            # Middle of current and next bin is where we will place the marker
             binned_x = ((x_bin * float(width)) / bin_number_x + ((x_bin + 1) * float(width)) / bin_number_x) / 2 - norm_x
             binned_y = ((y_bin * float(height)) / bin_number_y + ((y_bin + 1) * float(height)) / bin_number_y) / 2 - norm_y
 
-            if (binned_x, binned_y) not in binned_found:
-                x_bins.append(binned_x)
-                y_bins.append(binned_y)
-                binned_found.append((binned_x, binned_y))
+            binned_key = (binned_x, binned_y)
+            if binned_key not in found_pairs:
+                found_pairs[binned_key] = per_zone_percentage[-1]
             else:
-                x_bins.append(0)
-                y_bins.append(-100)
+                per_zone_percentage[-1] = found_pairs[binned_key]
+            x_bins.append(binned_x)
+            y_bins.append(binned_y)
 
             if location_counts[key] > 1:
-                if (binned_x, binned_y) not in found_pairs:
-                    plot_x.append(binned_x)
-                    plot_y.append(binned_y)
-                    found_pairs.append((binned_x, binned_y))
-                else:
-                    plot_x.append(0)
-                    plot_y.append(-100)
+                plot_x.append(binned_x)
+                plot_y.append(binned_y)
             else:
                 plot_x.append(df.iloc[j].LOC_X)
                 plot_y.append(df.iloc[j].LOC_Y)
@@ -292,11 +266,6 @@ class Shotchart:
         copied_df['LOC_PERCENTAGE'] = shot_locations_percentage
         copied_df['LOC_COUNTS'] = shot_locations_counts
         copied_df['LOC_RAW_COUNTS'] = raw_counts
-        copied_df['BIN_X'] = key_x
-        copied_df['BIN_Y'] = key_y
-        copied_df['PLOT_X'] = plot_x
-        copied_df['PLOT_Y'] = plot_y
-        copied_df['LOCATION_CODE'] = locations_annotated
 
         return copied_df
 
