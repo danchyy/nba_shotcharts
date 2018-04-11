@@ -130,7 +130,11 @@ class ShotchartRetriever(ApiRetriever):
         :return: Shotchart data in Pandas DataFrame object.
         """
         # Returning pandas data frame
-        return self.load_nba_dataset(index=0)
+        dataset = self.load_nba_dataset(index=0)
+        dataset.LOC_X = -dataset.LOC_X  # REAL DATA IS FLIPPED
+        dataset = dataset.loc[(dataset.SHOT_ZONE_AREA != "Back Court(BC)")
+                              & (dataset.LOC_Y < 300)]  # drop shots that aren't close to the center
+        return dataset
 
     def get_league_averages(self):
         """
