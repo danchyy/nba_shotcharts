@@ -6,7 +6,8 @@ from matplotlib.patches import Circle, Rectangle, Arc
 
 class Shotchart:
 
-    def __init__(self, shotchart_data, league_average_data, line_colors="black", lw=3, outer_lines=True):
+    def __init__(self, shotchart_data, league_average_data, line_colors="black", lw=2, outer_lines=True, marker="H",
+                 image_size="large", court_color="dark"):
         # df, bin_number_x = 30, bin_number_y = 300 / (500.0 / 30.0), max_size_given = None, league_average = None,
         # width = 500, height = 300, norm_x = 250, norm_y = 48
         self.shotchart_data = shotchart_data
@@ -24,8 +25,69 @@ class Shotchart:
         self.lw = lw
         self.outer_lines = outer_lines
 
+        # Color map for comparing percentages of shots
         self.cmap = sns.blend_palette(colors=["#4159E1", "#B0E0E6", "#FFFF99", "#EF3330", "#AB2020"], as_cmap=True)
+
+        # Combination for dark court color
         self.court_color = '#363F48'
+        self.text_color = "#E8E8FF"
+
+        # Combination for dark court color
+        if court_color == "light":
+            self.court_color = '#DEE4EF'
+            self.text_color = '#353638'
+
+        self.marker = marker  # Marker for plot
+
+        self.base_figure_size = 8  # size of figure in inches, DPI is set to 80
+        self.figure_size = 8
+        self.font_size = 8  # font for text that depicts legend
+        self.multiplier = 1
+        self.title_font = 16
+        if image_size == "medium":
+            self.figure_size = 10
+            self.font_size = 10
+            self.multiplier = 2
+            self.title_font = 20
+        elif image_size == "large":
+            self.figure_size = 12
+            self.font_size = 12
+            self.multiplier = 3
+            self.title_font = 24
+
+        # List for markers which will display legend for marker size that explains shot frequency
+        # List contains tuple that represent (x, y, marker_size_modifier)
+        self.marker_size_legend = 40
+        self.size_legend = [
+            (-230, 380, 1),
+            (-222, 383, 3),
+            (-211, 380, 6),
+            (-197, 377, 9),
+            (-180, 380, 14),
+            (-158, 375, 22),
+            (-132, 380, 32)
+        ]
+
+        # List for markers which will display legend for color of markers that explains shot percentage
+        # List contains tuple that represent (x, y, color_of_marker)
+        self.marker_color_legend = 300
+        self.color_legend = [
+            (131, 377, "#4159E1"),
+            (147, 380, "#B0E0E6"),
+            (163, 377, "#FFFF99"),
+            (179, 380, "#EF3330"),
+            (195, 377, "#AB2020")
+        ]
+
+        # Parameters needed for calling the plt.text command for frequency legend
+        self.less_frequent_string = (-240, 395, "Less\nFrequent", -5)
+        self.more_frequent_string = (-145, 340, "More\nFrequent", 5)
+
+        # Parameters needed for calling the plt.text command for shot percentage legend
+        self.comparison_string = (70, 410, "Comparison with league average percentage")
+        self.below_average_string = (90, 360, "Below\nAverage", 10)
+        self.above_average_string = (195, 390, "Above\nAverage", -10)
+
 
     # Amazing function by Bradley Fay for plotting the nba court
     # source: https://github.com/bradleyfay/py-Goldsberry/blob/master/docs/Visualizing%20NBA%20Shots%20with%20py-Goldsberry.ipynb
@@ -53,37 +115,37 @@ class Shotchart:
 
         # The paint
         # Create the outer box 0f the paint, width=16ft, height=19ft
-        outer_box = Rectangle((-80, -47.5), 160, 190, linewidth=lw, color=color,
+        outer_box = Rectangle((-80, -47.5), 160, 190, linewidth=lw, color=color, zorder=0,
                               fill=False)
         # Create the inner box of the paint, widt=12ft, height=19ft
-        inner_box = Rectangle((-60, -47.5), 120, 190, linewidth=lw, color=color,
+        inner_box = Rectangle((-60, -47.5), 120, 190, linewidth=lw, color=color, zorder=0,
                               fill=False)
 
         # Create free throw top arc
         top_free_throw = Arc((0, 142.5), 120, 120, theta1=0, theta2=180,
-                             linewidth=lw, color=color, fill=False)
+                             linewidth=lw, color=color, fill=False, zorder=0)
         # Create free throw bottom arc
-        bottom_free_throw = Arc((0, 142.5), 120, 120, theta1=180, theta2=0,
+        bottom_free_throw = Arc((0, 142.5), 120, 120, theta1=180, theta2=0, zorder=0,
                                 linewidth=lw, color=color, linestyle='dashed')
         # Restricted Zone, it is an arc with 4ft radius from center of the hoop
-        restricted = Arc((0, 0), 80, 80, theta1=0, theta2=180, linewidth=lw,
+        restricted = Arc((0, 0), 80, 80, theta1=0, theta2=180, linewidth=lw, zorder=0,
                          color=color)
 
         # Three point line
         # Create the side 3pt lines, they are 14ft long before they begin to arc
-        corner_three_a = Rectangle((-220, -47.5), 0, 138, linewidth=lw,
+        corner_three_a = Rectangle((-220, -47.5), 0, 138, linewidth=lw, zorder=0,
                                    color=color)
-        corner_three_b = Rectangle((220, -47.5), 0, 138, linewidth=lw, color=color)
+        corner_three_b = Rectangle((220, -47.5), 0, 138, linewidth=lw, color=color, zorder=0)
         # 3pt arc - center of arc will be the hoop, arc is 23'9" away from hoop
         # I just played around with the theta values until they lined up with the
         # threes
-        three_arc = Arc((0, 0), 475, 475, theta1=22, theta2=158, linewidth=lw,
+        three_arc = Arc((0, 0), 475, 475, theta1=22, theta2=158, linewidth=lw, zorder=0,
                         color=color)
 
         # Center Court
-        center_outer_arc = Arc((0, 422.5), 120, 120, theta1=180, theta2=0,
+        center_outer_arc = Arc((0, 422.5), 120, 120, theta1=180, theta2=0, zorder=0,
                                linewidth=lw, color=color)
-        center_inner_arc = Arc((0, 422.5), 40, 40, theta1=180, theta2=0,
+        center_inner_arc = Arc((0, 422.5), 40, 40, theta1=180, theta2=0, zorder=0,
                                linewidth=lw, color=color)
 
         # List of the court elements to be plotted onto the axes
@@ -271,42 +333,38 @@ class Shotchart:
 
     def plot_shotchart(self, title="Random title"):
         binned_df = self.create_bins(self.shotchart_data, league_average=self.league_average)
-        fig = plt.figure(figsize=(16, 16))
+        plt.figure(figsize=(self.figure_size, self.figure_size), dpi=80)
         # colors_dict = {0:'red', 1:'green'}
-
+        ax = self.draw_court(outer_lines=self.outer_lines, lw=self.lw)
 
         # LOC_PERCENTAGE -> total perc
         # PCT_LEAGUE_AVG_COMPARISON -> comparison per bins
         # PCT_LEAGUE_COMPARISON_ZONE -> comparison per zones only
         # LOC_X, LOC_Y -> real locs
         # BIN_LOC_X, BIN_LOC_Y -> binned locations
-        marker = 'H'
-        paths = plt.scatter(x=binned_df.BIN_LOC_X, y=binned_df.BIN_LOC_Y, marker=marker, s=binned_df.LOC_COUNTS,
-                            c=binned_df.PCT_LEAGUE_COMPARISON_ZONE, cmap=self.cmap)
-
+        paths = ax.scatter(x=binned_df.BIN_LOC_X, y=binned_df.BIN_LOC_Y, marker=self.marker,
+                           s=binned_df.LOC_COUNTS * self.multiplier, c=binned_df.PCT_LEAGUE_COMPARISON_ZONE,
+                           cmap=self.cmap)
 
         # Frequency
-
-        plt.text(x=-240, y=395, s="Less\nFrequent", rotation=-5, color="#E8E8FF")
-        plt.scatter(x=-230, y=380, s=100, marker=marker, c="#E8E8FF")
-        plt.scatter(x=-222, y=383, s=300, marker=marker, c="#E8E8FF")
-        plt.scatter(x=-211, y=380, s=600, marker=marker, c="#E8E8FF")
-        plt.scatter(x=-197, y=377, s=900, marker=marker, c="#E8E8FF")
-        plt.scatter(x=-180, y=380, s=1400, marker=marker, c="#E8E8FF")
-        plt.scatter(x=-158, y=375, s=2200, marker=marker, c="#E8E8FF")
-        plt.scatter(x=-132, y=380, s=3200, marker=marker, c="#E8E8FF")
-        plt.text(x=-140, y=350, s="More\nFrequent", rotation=5, color="#E8E8FF")
+        plt.text(x=self.less_frequent_string[0], y=self.less_frequent_string[1], s=self.less_frequent_string[2],
+                 rotation=self.less_frequent_string[3], color=self.text_color, fontsize=self.font_size)
+        for size_item in self.size_legend:
+            plt.scatter(x=size_item[0], y=size_item[1], s=self.marker_size_legend * self.multiplier *
+                        size_item[2], c=self.text_color, marker=self.marker)
+        plt.text(x=self.more_frequent_string[0], y=self.more_frequent_string[1], s=self.more_frequent_string[2],
+                 rotation=self.more_frequent_string[3], color=self.text_color, fontsize=self.font_size)
 
         # Efficiency
-
-        plt.text(x=80, y=410, s="Comparison with league average percentage", color="#E8E8FF")
-        plt.text(x=95, y=360, s="Below\nAverage", rotation=10, color="#E8E8FF")
-        plt.scatter(x=130, y=377, s=900, marker=marker, c="#4159E1")
-        plt.scatter(x=147, y=380, s=900, marker=marker, c="#B0E0E6")
-        plt.scatter(x=163, y=377, s=900, marker=marker, c="#FFFF99")
-        plt.scatter(x=180, y=380, s=900, marker=marker, c="#EF3330")
-        plt.scatter(x=197, y=377, s=900, marker=marker, c="#AB2020")
-        plt.text(x=195, y=390, s="Above\nAverage", rotation=-10, color="#E8E8FF")
+        plt.text(x=self.comparison_string[0], y=self.comparison_string[1], s=self.comparison_string[2],
+                 color=self.text_color, fontsize=self.font_size)
+        plt.text(x=self.below_average_string[0], y=self.below_average_string[1], s=self.below_average_string[2],
+                 rotation=self.below_average_string[3], color=self.text_color, fontsize=self.font_size)
+        for color_item in self.color_legend:
+            plt.scatter(x=color_item[0], y=color_item[1], s=self.marker_color_legend * self.multiplier,
+                        c=color_item[2], marker=self.marker)
+        plt.text(x=self.above_average_string[0], y=self.above_average_string[1], s=self.above_average_string[2],
+                 rotation=self.above_average_string[3], color=self.text_color, fontsize=self.font_size)
 
         # Changing court color
         plt.gca().set_facecolor(self.court_color)
@@ -319,15 +377,15 @@ class Shotchart:
         plt.yticks([])
 
         # Title
-        plt.title(title, size=20)
+        plt.title(title, size=self.title_font)
 
         # Drawing court
-        self.draw_court(outer_lines=self.outer_lines, lw=self.lw)
-        plt.xlim(-251, 251)
+
+        plt.xlim(-252, 252)
         plt.ylim(-65, 423)
 
-        plt.text(x=-220, y=-58, s="instagram.com/bballytics", color="#E8E8FF")
-        plt.text(x=170, y=-58, s="Data: nba.com", color="#E8E8FF")
+        plt.text(x=-220, y=-58, s="github.com/danchyy/nba_shotcharts", color=self.text_color, fontsize=self.font_size)
+        plt.text(x=170, y=-58, s="Data: nba.com", color=self.text_color, fontsize=self.font_size)
 
         # Colorbar
         """cax = fig.add_axes([0.7, 0.82, 0.2, 0.025])
@@ -342,5 +400,5 @@ class Shotchart:
         # Saving figure
         # plt.savefig('lebron.png', bbox_inches='tight')
         # colorbar.set_label('Comparison to league average percentages', color='#E2E2FF', size=16, coords=(1.5, 1.5))
-        # plt.show()
-        plt.savefig("sample.png", bbox_inches="tight")
+        plt.show()
+        # plt.savefig("sample.png", bbox_inches="tight")
