@@ -39,5 +39,5 @@ class PlayersRetriever(ApiRetriever):
         :param player_name: Name of the player whose data wants to be retrieved.
         :return: Row from DataFrame if that player exists, otherwise empty row.
         """
-        pandas_data = self.load_nba_dataset(index=0)
+        pandas_data = self.get_players()
         return pandas_data.loc[pandas_data.DISPLAY_FIRST_LAST == player_name]

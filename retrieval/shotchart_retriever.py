@@ -41,6 +41,9 @@ class ShotchartRetriever(ApiRetriever):
         :param player_position: Empty or 'Guard', 'Forward', or 'Center'.
         """
         super().__init__(constants.SHOTCHART_PARAM)
+        self.shotchart = None
+        self.league_average = None
+        # Period
         self.period = period
         # '^((East)|(West))?$'
         self.vs_conference = vs_conference
@@ -130,10 +133,14 @@ class ShotchartRetriever(ApiRetriever):
         :return: Shotchart data in Pandas DataFrame object.
         """
         # Returning pandas data frame
+        if self.shotchart is not None:
+            return self.shotchart
         dataset = self.load_nba_dataset(index=0)
         dataset.LOC_X = -dataset.LOC_X  # REAL DATA IS FLIPPED
         dataset = dataset.loc[(dataset.SHOT_ZONE_AREA != "Back Court(BC)")
                               & (dataset.LOC_Y < 300)]  # drop shots that aren't close to the center
+        # To cache the data
+        self.shotchart = dataset
         return dataset
 
     def get_league_averages(self):
