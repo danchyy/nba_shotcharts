@@ -1,0 +1,92 @@
+
+# Taken from nbasavant.com
+SHOT_TYPES = [
+    "Alley Oop Dunk Shot",
+    "Alley Oop Layup shot",
+    "Cutting Dunk Shot",
+    "Cutting Finger Roll Layup Shot",
+    "Cutting Layup Shot",
+    "Driving Bank Hook Shot",
+    "Driving Bank shot",
+    "Driving Dunk Shot",
+    "Driving Finger Roll Layup Shot",
+    "Driving Floating Bank Jump Shot",
+    "Driving Floating Jump Shot",
+    "Driving Hook Shot",
+    "Driving Jump shot",
+    "Driving Layup Shot",
+    "Driving Reverse Dunk Shot",
+    "Driving Reverse Layup Shot",
+    "Driving Slam Dunk Shot",
+    "Dunk Shot",
+    "Fadeaway Bank shot",
+    "Fadeaway Jump Shot",
+    "Finger Roll Layup Shot",
+    "Floating Jump shot",
+    "Hook Bank Shot",
+    "Hook Shot",
+    "Jump Bank Hook Shot",
+    "Jump Bank Shot",
+    "Jump Hook Shot",
+    "Jump Shot",
+    "Layup Shot",
+    "No Shot",
+    "Pullup Bank shot",
+    "Pullup Jump shot",
+    "Putback Dunk Shot",
+    "Putback Layup Shot",
+    "Putback Reverse Dunk Shot",
+    "Putback Slam Dunk Shot",
+    "Reverse Dunk Shot",
+    "Reverse Layup Shot",
+    "Reverse Slam Dunk Shot",
+    "Running Alley Oop Dunk Shot",
+    "Running Alley Oop Layup Shot",
+    "Running Bank Hook Shot",
+    "Running Bank shot",
+    "Running Dunk Shot",
+    "Running Finger Roll Layup Shot",
+    "Running Hook Shot",
+    "Running Jump Shot",
+    "Running Layup Shot",
+    "Running Pull-Up Jump Shot",
+    "Running Reverse Dunk Shot",
+    "Running Reverse Layup Shot",
+    "Running Slam Dunk Shot",
+    "Running Tip Shot",
+    "Slam Dunk Shot",
+    "Step Back Bank Jump Shot",
+    "Step Back Jump shot",
+    "Tip Dunk Shot",
+    "Tip Layup Shot",
+    "Tip Shot",
+    "Turnaround Bank Hook Shot",
+    "Turnaround Bank shot",
+    "Turnaround Fadeaway Bank Jump Shot",
+    "Turnaround Fadeaway shot",
+    "Turnaround Hook Shot"
+]
+
+SHOT_ZONE_BASIC = [
+    'Mid-Range',
+    'Restricted Area',
+    'Left Corner 3',
+    'In The Paint (Non-RA)',
+    'Above the Break 3',
+    'Right Corner 3'
+]
+
+SHOT_ZONE_AREAS = [
+    'Right Side Center(RC)',
+    'Left Side Center(LC)',
+    'Center(C)',
+    'Left Side(L)',
+    'Right Side(R)'
+]
+
+SHOT_ZONE_RANGES = [
+    '16-24 ft.',
+    'Less Than 8 ft.',
+    '24+ ft.',
+    '8-16 ft.'
+]
