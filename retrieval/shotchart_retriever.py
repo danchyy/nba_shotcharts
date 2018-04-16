@@ -1,6 +1,7 @@
 from .api_retriever import ApiRetriever
 from utils import constants
-
+import pandas as pd
+from utils import shotchart_constants
 
 class ShotchartRetriever(ApiRetriever):
     def __init__(self, period=0, vs_conference="", league_id="00", last_n_games=0, team_id=0, location="", outcome="",
@@ -97,6 +98,9 @@ class ShotchartRetriever(ApiRetriever):
         self.player_position = player_position
         self.build_param_value_dict()
 
+        self.decorate = False
+        self.decoration_dataset = None
+
     def build_param_value_dict(self):
         """
         Builds parameter dictionary for retrieval of shotchart data.
@@ -149,3 +153,62 @@ class ShotchartRetriever(ApiRetriever):
         :return: League averages data in Pandas DataFrame object.
         """
         return self.load_nba_dataset(index=1)
+
+    def get_shotchart_for_zones(self, zones):
+        """
+        Creates shotchart data only for zones which are given as argument. Available zones are 'Mid-Range',
+        'Restricted Area', 'Left Corner 3', 'In The Paint (Non-RA)', 'Above the Break 3', 'Right Corner 3'.
+        :param zones: Zones upon which the shots will be filtered.
+        :return: Zone filtered shotchart data.
+        """
+        shotchart_data = self.decoration_dataset if self.decorate else self.get_shotchart()
+
+        assert isinstance(shotchart_data, pd.DataFrame)
+        return shotchart_data.loc[shotchart_data.SHOT_ZONE_BASIC.isin(zones)]
+
+    def get_shotchart_for_areas(self, areas):
+        """
+        Creates shotchart data only for areas which are given as argument. Available areas are 'Right Side Center(RC)',
+        'Left Side Center(LC)', 'Center(C)', 'Left Side(L)', 'Right Side(R)'.
+        :param areas: Areas upon which the shots will be filtered.
+        :return: Area filtered shotchart data.
+        """
+        shotchart_data = self.decoration_dataset if self.decorate else self.get_shotchart()
+
+        assert isinstance(shotchart_data, pd.DataFrame)
+        return shotchart_data.loc[shotchart_data.SHOT_ZONE_AREA.isin(areas)]
+
+    def get_shotchart_for_ranges(self, ranges):
+        """
+        Creates shotchart data only for ranges which are given as argument. Available ranges are '16-24 ft.',
+        'Less Than 8 ft.', '24+ ft.', '8-16 ft.'.
+        :param ranges: Ranges upon which the shots will be filtered.
+        :return: Ranges filtered shotchart data.
+        """
+        shotchart_data = self.decoration_dataset if self.decorate else self.get_shotchart()
+
+        assert isinstance(shotchart_data, pd.DataFrame)
+        return shotchart_data.loc[shotchart_data.SHOT_ZONE_RANGE.isin(ranges)]
+
+    def get_shotchart_for_zones_areas_ranges(self, zones=None, areas=None, ranges=None):
+        """
+        Retrieves shotchart data for combination of zones, areas and ranges. If None or empty array
+        is given for any of the arguments that argument will be excluded from combination.
+        :param zones: Zones which will be used for filtering data.
+        :param areas: Areas which will be used for filtering data.
+        :param ranges: Ranges which will be used for filtering data.
+        :return: Data with filtered data.
+        """
+        self.decorate = True
+        self.decoration_dataset = self.get_shotchart()
+        if len(zones) > 0:
+            self.decoration_dataset = self.get_shotchart_for_zones(zones)
+        if len(areas) > 0:
+            self.decoration_dataset = self.get_shotchart_for_areas(areas)
+        if len(ranges) > 0:
+            self.decoration_dataset = self.get_shotchart_for_ranges(ranges)
+
+        self.decorate = False
+
+        return self.decoration_dataset
+
