@@ -68,25 +68,25 @@ SHOT_TYPES = [
 ]
 
 SHOT_ZONE_BASIC = [
-    'Mid-Range',
-    'Restricted Area',
-    'Left Corner 3',
-    'In The Paint (Non-RA)',
-    'Above the Break 3',
-    'Right Corner 3'
+    u'Mid-Range',
+    u'Restricted Area',
+    u'Left Corner 3',
+    u'In The Paint (Non-RA)',
+    u'Above the Break 3',
+    u'Right Corner 3'
 ]
 
 SHOT_ZONE_AREAS = [
-    'Right Side Center(RC)',
-    'Left Side Center(LC)',
-    'Center(C)',
-    'Left Side(L)',
-    'Right Side(R)'
+    u'Right Side Center(RC)',
+    u'Left Side Center(LC)',
+    u'Center(C)',
+    u'Left Side(L)',
+    u'Right Side(R)'
 ]
 
 SHOT_ZONE_RANGES = [
-    '16-24 ft.',
-    'Less Than 8 ft.',
-    '24+ ft.',
-    '8-16 ft.'
+    u'16-24 ft.',
+    u'Less Than 8 ft.',
+    u'24+ ft.',
+    u'8-16 ft.'
 ]
