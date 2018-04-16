@@ -1,9 +1,10 @@
 from .api_retriever import ApiRetriever
 from .shotchart_retriever import ShotchartRetriever
 from .players_retriever import PlayersRetriever
+from utils import constants
 
 
-class ApiRetrieverFactory():
+class ApiRetrieverFactory:
 
     def create_regular_shotchart_retriever_for_player(self, player_id, season):
         """
@@ -15,11 +16,11 @@ class ApiRetrieverFactory():
         """
         return ShotchartRetriever(player_id=player_id, season=season)
 
-
-    def create_players_retriever_for_current_seasonn(self):
+    def create_players_retriever_for_season(self, season=constants.CURRENT_SEASON):
         """
         Creates the PlayersRetriever class which can retriever all players or only one of them based on further
         calls by user.
+        :param season: Season for which the players will be retrieved, by default it is current season
         :return: PlayersRetriever instance.
         """
-        return PlayersRetriever()
+        return PlayersRetriever(season=season)
