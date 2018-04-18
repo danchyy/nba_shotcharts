@@ -1,7 +1,7 @@
 from .api_retriever import ApiRetriever
 from utils import constants
 import pandas as pd
-from utils import shotchart_constants
+
 
 class ShotchartRetriever(ApiRetriever):
     def __init__(self, period=0, vs_conference="", league_id="00", last_n_games=0, team_id=0, location="", outcome="",
@@ -211,4 +211,3 @@ class ShotchartRetriever(ApiRetriever):
         self.decorate = False
 
         return self.decoration_dataset
-

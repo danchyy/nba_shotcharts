@@ -1,4 +1,3 @@
-from .api_retriever import ApiRetriever
 from .shotchart_retriever import ShotchartRetriever
 from .players_retriever import PlayersRetriever
 from utils import constants
@@ -6,7 +5,8 @@ from utils import constants
 
 class ApiRetrieverFactory:
 
-    def create_regular_shotchart_retriever_for_player(self, player_id, season):
+    @staticmethod
+    def create_regular_shotchart_retriever_for_player(player_id, season):
         """
         Method which creates classic retrieval class which fetches all shots and all stats in areas throughout
         one season. Simplest method of creation of ApiRetriever object.
@@ -16,7 +16,8 @@ class ApiRetrieverFactory:
         """
         return ShotchartRetriever(player_id=player_id, season=season)
 
-    def create_players_retriever_for_season(self, season=constants.CURRENT_SEASON):
+    @staticmethod
+    def create_players_retriever_for_season(season=constants.CURRENT_SEASON):
         """
         Creates the PlayersRetriever class which can retriever all players or only one of them based on further
         calls by user.

@@ -1,4 +1,3 @@
-from utils import constants
 from collections import OrderedDict
 import pandas as pd
 import requests
@@ -40,11 +39,9 @@ class ApiRetriever:
                 url += "&"
         return url
 
-
     def load_nba_dataset(self, index=0):
         """
-        Loads the dataset from given json data, here the data which is extracted is based on range type parameter.
-        If it's set to zero then the shots from player will be extracted, otherwise the league averages will be extracted.
+        Loads the dataset from json data which is set based on API parameters.
         :param index: Often resultSets have mulitple results, but that depends on usecase so we will leave to inherited
         class to make decision of index choice.
         :return: Pandas data frame.

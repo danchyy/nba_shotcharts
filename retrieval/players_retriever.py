@@ -1,6 +1,6 @@
 from .api_retriever import ApiRetriever
 from utils import constants
-import pandas as pd
+
 
 class PlayersRetriever(ApiRetriever):
 
@@ -16,7 +16,6 @@ class PlayersRetriever(ApiRetriever):
         self.season = season
         self.is_only_current_season = is_only_current_season
         self.build_param_value_dict()
-
 
     def build_param_value_dict(self):
         """
