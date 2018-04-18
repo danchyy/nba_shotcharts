@@ -3,12 +3,27 @@ import matplotlib.pyplot as plt
 from collections import Counter
 import seaborn as sns
 from matplotlib.patches import Circle, Rectangle, Arc
+import operator
 
 
 class Shotchart:
 
     def __init__(self, shotchart_data, league_average_data, lines_color="black", lw=2,
-                 outer_lines=True, marker="H", number_of_markers="medium", image_size="large", court_color="dark"):
+                 outer_lines=True, marker="s", number_of_markers="medium", image_size="large", court_color="dark"):
+        """
+        Constructor of Shotchart object. It takes several arguments which will be used later to modify the
+        look of final plot.
+        :param shotchart_data: Data frame object
+        :param league_average_data: Data frame object which contains league average percentages per zone.
+        :param lines_color: Color of the court lines.
+        :param lw: Widht of the court lines.
+        :param outer_lines: Whether outer lines of the court should be plotted
+        :param marker: Marker which will be used, standard notation of Matplotlib's library.
+        :param number_of_markers: Whether there will be small, medium or large number of markers (this variable controls
+        the number of bins).
+        :param image_size: Size of image, can be small, medium and large.
+        :param court_color: Color of the court, can be dark or light.
+        """
         self.shotchart_data = shotchart_data
         self.league_average = league_average_data
         self.lines_color = lines_color
@@ -71,11 +86,11 @@ class Shotchart:
         # List contains tuple that represent (x, y, color_of_marker)
         self.marker_color_legend = 300
         self.color_legend = [
-            (117, 368, "#4159E1"),
-            (135, 371, "#B0E0E6"),
+            (114, 368, "#4159E1"),
+            (133, 371, "#B0E0E6"),
             (153, 374, "#FFFF99"),
-            (171, 377, "#EF3330"),
-            (188, 380, "#AB2020")
+            (172, 377, "#EF3330"),
+            (191, 380, "#AB2020")
         ]
 
         # Parameters needed for calling the plt.text command for frequency legend
@@ -178,7 +193,6 @@ class Shotchart:
         keys = []
         # Counter of shots and shots made per locations
         location_counts, location_made = Counter(), Counter()
-        locations_shots = {}  # real locations of shots which will be connected to bins and later arithmetic middle will
         # be found
 
         # Size of elements in bin, they should be the same
@@ -190,13 +204,22 @@ class Shotchart:
         zones_counts, zones_made = Counter(), Counter()
 
         # Maximum size of an element in one bin
-        max_size = float((bin_size_x - 1) * (bin_size_y - 1))
+        max_size = int((int(bin_size_x) - 1) * (int(bin_size_y) - 1))
 
         # Keys that are in restricted area will be stored here, this will be used for finding maximum number of shots
         restricted_area_keys = []
 
+        # Dictionary which will determine the color of marker in bin
+        percentage_color_dict = {}
+
         for i in range(len(self.shotchart_data)):
-            x_shot_orig, y_shot_orig = self.shotchart_data.iloc[i].LOC_X, self.shotchart_data.iloc[i].LOC_Y
+
+            # Row from data frame
+            row = self.shotchart_data.iloc[i]
+
+            x_shot_orig, y_shot_orig = row.LOC_X, row.LOC_Y
+
+            # Normalize
             x_shot = x_shot_orig + self.norm_x  # to put minimum to zero
             y_shot = y_shot_orig + self.norm_y  # to put minimum to zero
 
@@ -204,26 +227,20 @@ class Shotchart:
             curr_x_bin = 0 if x_shot == 0 else int((x_shot / float(self.width)) * self.bin_number_x)
             curr_y_bin = 0 if y_shot == 0 else int((y_shot / float(self.height)) * self.bin_number_y)
 
-            # x_bins.append(curr_bin_x_coord)
-            # y_bins.append(curr_bin_y_coord)
-
+            # Key for dicts
             key = (curr_x_bin, curr_y_bin)
 
-            if self.shotchart_data.iloc[i].SHOT_ZONE_BASIC == "Restricted Area":
+            if row.SHOT_ZONE_BASIC == "Restricted Area":
                 restricted_area_keys.append(key)
 
+            # Counting number of shots made and shots shot
             keys.append(key)
             location_counts[key] += 1
-            location_made[key] += self.shotchart_data.iloc[i].SHOT_MADE_FLAG
+            location_made[key] += row.SHOT_MADE_FLAG
 
-            if key in locations_shots:
-                locations_shots[key].append((x_shot_orig, y_shot_orig))
-            else:
-                locations_shots[key] = [(x_shot_orig, y_shot_orig)]
+            basic_shot_zone, shot_zone_area = row.SHOT_ZONE_BASIC, row.SHOT_ZONE_AREA
+            zone_dist = row.SHOT_ZONE_RANGE
 
-            basic_shot_zone, shot_zone_area = self.shotchart_data.iloc[i].SHOT_ZONE_BASIC, self.shotchart_data.iloc[
-                i].SHOT_ZONE_AREA
-            zone_dist = self.shotchart_data.iloc[i].SHOT_ZONE_RANGE
             area_code = shot_zone_area.split("(")[1].split(")")[0]
             if "3" in basic_shot_zone:
                 locations_annotated.append("3" + area_code)
@@ -234,10 +251,22 @@ class Shotchart:
             else:
                 locations_annotated.append("R" + area_code)
 
+            # Creating key for zones
             zone_key = (basic_shot_zone, shot_zone_area, zone_dist)
+
+            # Counting the occurences based on both bin_key and zone_key, because of that we have dict in dict
+            if key in percentage_color_dict:
+                if zone_key in percentage_color_dict[key]:
+                    percentage_color_dict[key][zone_key] = percentage_color_dict[key][zone_key] + 1
+                else:
+                    percentage_color_dict[key][zone_key] = 1
+            else:
+                percentage_color_dict[key] = {}
+                percentage_color_dict[key][zone_key] = 1
+
             zones_counts[zone_key] += 1
 
-            if self.shotchart_data.iloc[i].SHOT_MADE_FLAG:
+            if row.SHOT_MADE_FLAG:
                 zones_made[zone_key] += 1
 
         shot_locations_percentage = []  # percentage in given bin
@@ -258,21 +287,23 @@ class Shotchart:
 
         sorted_non_ra = sorted(non_ra)
         max_out_of_restricted = float(sorted_non_ra[-1])
-        found_pairs = {}
 
         for j in range(len(self.shotchart_data)):
             key = keys[j]
+            x_bin, y_bin = key[0], key[1]
             shot_percent = float(location_made[key]) / location_counts[key]
             # shot_percent = np.clip(shot_percent, 0.3, 0.7)
             shot_locations_percentage.append(shot_percent * 100)
             if self.league_average is not None:
                 # Getting info about zone
-                shot_zone_basic = self.shotchart_data.iloc[j].SHOT_ZONE_BASIC
-                shot_zone_area = self.shotchart_data.iloc[j].SHOT_ZONE_AREA
-                distance = self.shotchart_data.iloc[j].SHOT_ZONE_RANGE
+                # We are getting that info from
+                per_zone_counter_from_percentage_color_dict = percentage_color_dict[key]
+                zone_key = max(per_zone_counter_from_percentage_color_dict.items(),
+                               key=operator.itemgetter(1))[0]
 
-                # Creating zone key
-                zone_key = (shot_zone_basic, shot_zone_area, distance)
+                shot_zone_basic = zone_key[0]
+                shot_zone_area = zone_key[1]
+                distance = zone_key[2]
 
                 # Calculating the percentage in current zone
                 zone_percent = 0.0 if zone_key not in zones_made else float(zones_made[zone_key]) / \
@@ -298,29 +329,18 @@ class Shotchart:
             # Storing the data into a list
             shot_locations_counts.append((float(value_to_scale) / max_out_of_restricted) * max_size)
 
-            # Raw count of shots
+            # Count of shots per bin
             raw_counts.append(location_counts[key])
 
-            x_bin, y_bin = key[0], key[1]
-            # Middle of current and next bin is where we will place the marker
-            binned_x = ((x_bin * float(self.width)) / self.bin_number_x + (
-                    (x_bin + 1) * float(self.width)) / self.bin_number_x) / 2 - \
-                       self.norm_x
-            binned_y = ((y_bin * float(self.height)) / self.bin_number_y + (
-                    (y_bin + 1) * float(self.height)) / self.bin_number_y) / 2 - \
-                       self.norm_y
-
-            # Storing the key in found_pairs dict so that we can get rid of overlapping colors
-            binned_key = (binned_x, binned_y)
-            if binned_key not in found_pairs:
-                found_pairs[binned_key] = per_zone_comparison[-1]
-            else:
-                # Retrieving already found percentage
-                per_zone_comparison[-1] = found_pairs[binned_key]
+            # Middle of current and next bin is where we will place the marker in real coordinates
+            unbinned_x = ((x_bin * float(self.width)) / self.bin_number_x + (
+                    (x_bin + 1) * float(self.width)) / self.bin_number_x) / 2 - self.norm_x
+            unbinned_y = ((y_bin * float(self.height)) / self.bin_number_y + (
+                    (y_bin + 1) * float(self.height)) / self.bin_number_y) / 2 - self.norm_y
 
             # Adding binned locations
-            x_bins.append(binned_x)
-            y_bins.append(binned_y)
+            x_bins.append(unbinned_x)
+            y_bins.append(unbinned_y)
 
         # Binned locations
         copied_df['BIN_LOC_X'] = x_bins
@@ -335,7 +355,7 @@ class Shotchart:
         copied_df['LOC_PERCENTAGE'] = shot_locations_percentage
         # Percentage of whole zone (not in comparison with league average)
         copied_df['LOC_ZONE_PERCENTAGE'] = per_zone_percentage
-        # These following two lists aren't really used
+        # Scaled count of shots and count of shots per bin
         copied_df['LOC_COUNTS'] = shot_locations_counts
         copied_df['LOC_RAW_COUNTS'] = raw_counts
 
@@ -351,7 +371,7 @@ class Shotchart:
                  rotation=self.less_frequent_string[3], color=self.text_color, fontsize=self.font_size)
         for size_item in self.size_legend:
             plt.scatter(x=size_item[0], y=size_item[1], s=self.marker_size_legend * self.multiplier *
-                                                          size_item[2], c=self.text_color, marker=self.marker)
+                        size_item[2], c=self.text_color, marker=self.marker)
         plt.text(x=self.more_frequent_string[0], y=self.more_frequent_string[1], s=self.more_frequent_string[2],
                  rotation=self.more_frequent_string[3], color=self.text_color, fontsize=self.font_size)
 
@@ -388,8 +408,7 @@ class Shotchart:
         # BIN_LOC_X, BIN_LOC_Y -> binned locations
         plt.scatter(x=binned_df.BIN_LOC_X, y=binned_df.BIN_LOC_Y, marker=self.marker,
                     s=binned_df.LOC_COUNTS * self.multiplier, c=binned_df.PCT_LEAGUE_COMPARISON_ZONE,
-                    cmap=self.cmap)
-
+                    cmap=self.cmap, linewidths=1.0)
         # Plotting frequency
         self.plot_frequency_legend()
 
@@ -400,8 +419,8 @@ class Shotchart:
         plt.gca().set_facecolor(self.court_color)
         self.draw_court()
 
-        # plt.xticks(np.arange(-250, 251, 20))  # for sanity check
-        # plt.yticks(np.arange(-50, 490, 20))
+        # plt.xticks(np.arange(-250, 252, 16.6667))  # for sanity check
+        # plt.yticks(np.arange(-48.5, 490, 16.6667))
         # Removing ticks
         plt.xticks([])
         plt.yticks([])
@@ -421,8 +440,9 @@ class Shotchart:
 
         # Saving figure
         if should_save_file:
-            ## Bbox_inches removes things that make image ugly
+            # Bbox_inches removes things that make image ugly
             plt.savefig(image_path, bbox_inches="tight")
+
         plt.show()
 
 
