@@ -164,6 +164,12 @@ class Shotchart:
         return ax
 
     def create_bins(self):
+        """
+        Method which creates bins the dataset into squared grid. This is used so that plot looks nicer than the raw
+        locations plot. Along with binning the data, the percentages per zones and for each bin are calculated here
+        and added to the copy of self.shotchart_data object so they can be used for plotting later.
+        :return: Returns the copied  self.shotchart_data pandas DataFrame object with additional info about the shots.
+        """
         # Binned x and y coordinates
         x_bins, y_bins = [], []
         # Copying the dataset to add more data
@@ -316,19 +322,30 @@ class Shotchart:
             x_bins.append(binned_x)
             y_bins.append(binned_y)
 
+        # Binned locations
         copied_df['BIN_LOC_X'] = x_bins
         copied_df['BIN_LOC_Y'] = y_bins
+        # Percentage comparison with league averages
         if league_average is not None:
+            # Comparison of each shot with league average for that zone
             copied_df['PCT_LEAGUE_AVG_COMPARISON'] = shot_comparison
+            # Comparison of each zone with league average for that zone
             copied_df['PCT_LEAGUE_COMPARISON_ZONE'] = per_zone_comparison
+        # Percentage of shots for that location
         copied_df['LOC_PERCENTAGE'] = shot_locations_percentage
+        # Percentage of whole zone (not in comparison with league average)
         copied_df['LOC_ZONE_PERCENTAGE'] = per_zone_percentage
+        # These following two lists aren't really used
         copied_df['LOC_COUNTS'] = shot_locations_counts
         copied_df['LOC_RAW_COUNTS'] = raw_counts
 
         return copied_df
 
     def plot_frequency_legend(self):
+        """
+        Method which is in charge of plotting the frequency
+        :return:
+        """
         # Frequency
         plt.text(x=self.less_frequent_string[0], y=self.less_frequent_string[1], s=self.less_frequent_string[2],
                  rotation=self.less_frequent_string[3], color=self.text_color, fontsize=self.font_size)
@@ -339,6 +356,9 @@ class Shotchart:
                  rotation=self.more_frequent_string[3], color=self.text_color, fontsize=self.font_size)
 
     def plot_efficiency_legend(self):
+        """
+        Method which is in charge of plotting the efficiency legend on the shotchart for some NBA player.
+        """
         # Efficiency
         plt.text(x=self.comparison_string[0], y=self.comparison_string[1], s=self.comparison_string[2],
                  color=self.text_color, fontsize=self.font_size)
@@ -351,6 +371,12 @@ class Shotchart:
                  rotation=self.above_average_string[3], color=self.text_color, fontsize=self.font_size)
 
     def plot_shotchart(self, title, should_save_file=False, image_path=None):
+        """
+        Method which is in charge of plotting the shotchart. It creates the binned data first and plots that data.
+        :param title: Title of the chart.
+        :param should_save_file: Whether the file should be saved.
+        :param image_path: Path of the file, used only when should_save_file is set to True.
+        """
         binned_df = self.create_bins()
         plt.figure(figsize=(self.figure_size, self.figure_size), dpi=80)
         # colors_dict = {0:'red', 1:'green'}
