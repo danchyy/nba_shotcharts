@@ -4,12 +4,13 @@ from collections import Counter
 import seaborn as sns
 from matplotlib.patches import Circle, Rectangle, Arc
 import operator
+from nba_shotcharts.utils.custom_marker import get_smooth_square
 
 
 class Shotchart:
 
     def __init__(self, shotchart_data, league_average_data, lines_color="black", lw=2,
-                 outer_lines=True, marker="s", number_of_markers="medium", image_size="large", court_color="dark"):
+                 outer_lines=True, marker="ss", number_of_markers="medium", image_size="large", court_color="dark"):
         """
         Constructor of Shotchart object. It takes several arguments which will be used later to modify the
         look of final plot.
@@ -18,7 +19,8 @@ class Shotchart:
         :param lines_color: Color of the court lines.
         :param lw: Widht of the court lines.
         :param outer_lines: Whether outer lines of the court should be plotted
-        :param marker: Marker which will be used, standard notation of Matplotlib's library.
+        :param marker: Marker which will be used, standard notation of Matplotlib's library or 'ss' for Smooth Square
+        (default value).
         :param number_of_markers: Whether there will be small, medium or large number of markers (this variable controls
         the number of bins).
         :param image_size: Size of image, can be small, medium and large.
@@ -54,6 +56,8 @@ class Shotchart:
             self.text_color = '#353638'
 
         self.marker = marker  # Marker for plot
+        if self.marker == "ss":
+            self.marker = get_smooth_square()
 
         self.base_figure_size = 8  # size of figure in inches, DPI is set to 80
         self.figure_size = self.base_figure_size
