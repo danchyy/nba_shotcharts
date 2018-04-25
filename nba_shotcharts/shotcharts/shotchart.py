@@ -346,7 +346,7 @@ class Shotchart:
         copied_df['BIN_LOC_X'] = x_bins
         copied_df['BIN_LOC_Y'] = y_bins
         # Percentage comparison with league averages
-        if league_average is not None:
+        if self.league_average is not None:
             # Comparison of each shot with league average for that zone
             copied_df['PCT_LEAGUE_AVG_COMPARISON'] = shot_comparison
             # Comparison of each zone with league average for that zone
