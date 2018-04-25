@@ -447,7 +447,7 @@ class Shotchart:
 
 
 if __name__ == '__main__':
-    from retrieval.api_retriever_factory import ApiRetrieverFactory
+    from nba_stats.retrieval.api_retriever_factory import ApiRetrieverFactory
 
     westbrook_id = "201566"
     factory = ApiRetrieverFactory()
