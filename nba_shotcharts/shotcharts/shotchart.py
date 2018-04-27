@@ -4,13 +4,15 @@ from collections import Counter
 import seaborn as sns
 from matplotlib.patches import Circle, Rectangle, Arc
 import operator
+import io
 from nba_shotcharts.utils.custom_marker import get_smooth_square
 
 
 class Shotchart:
 
     def __init__(self, shotchart_data, league_average_data, lines_color="black", lw=2,
-                 outer_lines=True, marker="ss", number_of_markers="medium", image_size="large", court_color="dark"):
+                 outer_lines=True, marker="ss", number_of_markers="medium", image_size="large", court_color="dark",
+                 is_for_web=False):
         """
         Constructor of Shotchart object. It takes several arguments which will be used later to modify the
         look of final plot.
@@ -25,9 +27,11 @@ class Shotchart:
         the number of bins).
         :param image_size: Size of image, can be small, medium and large.
         :param court_color: Color of the court, can be dark or light.
+        :param is_for_web: Whether shotchart will be plotted for web, if True then the parameters will be adjusted a bit.
         """
         self.shotchart_data = shotchart_data
         self.league_average = league_average_data
+        self.is_for_web = is_for_web
         self.lines_color = lines_color
         self.outer_lines = outer_lines
         self.bin_number_x = 30.0
@@ -64,16 +68,25 @@ class Shotchart:
         self.font_size = 8.5  # font for text that depicts legend
         self.multiplier = 1  # Multiplier for markers
         self.title_font = 16  # Font of title is a bit bigger than regular text font
+        if self.is_for_web:
+            self.font_size = 7
+            self.multiplier = 0.75
         if image_size == "medium":  # Based on image size, the parameters are increased accordingly to the size
             self.figure_size = 12
             self.font_size = self.figure_size + 1
             self.multiplier = 2.5
             self.title_font = 24
+            if self.is_for_web:
+                self.font_size = self.figure_size - 2
+                self.multiplier = 1.75
         elif image_size == "large":
             self.figure_size = 16
             self.font_size = self.figure_size + 1
             self.multiplier = 5
             self.title_font = 32
+            if self.is_for_web:
+                self.font_size = self.figure_size - 2
+                self.multiplier = 3.25
 
         # List for markers which will display legend for marker size that explains shot frequency
         # List contains tuple that represent (x, y, marker_size_modifier)
@@ -394,12 +407,15 @@ class Shotchart:
         plt.text(x=self.above_average_string[0], y=self.above_average_string[1], s=self.above_average_string[2],
                  rotation=self.above_average_string[3], color=self.text_color, fontsize=self.font_size)
 
-    def plot_shotchart(self, title, should_save_file=False, image_path=None):
+    def plot_shotchart(self, title, should_save_file=False, image_path=None, is_plot_for_response=False):
         """
         Method which is in charge of plotting the shotchart. It creates the binned data first and plots that data.
         :param title: Title of the chart.
         :param should_save_file: Whether the file should be saved.
         :param image_path: Path of the file, used only when should_save_file is set to True.
+        :param is_plot_for_response: If image should be plotted to response then the buffer is returned.
+        :return Returns nothing, but if is_plot_for_response set to True returns buffer with plot which can be used
+        for plotting to response
         """
         binned_df = self.create_bins()
         plt.figure(figsize=(self.figure_size, self.figure_size), dpi=80)
@@ -446,6 +462,11 @@ class Shotchart:
         if should_save_file:
             # Bbox_inches removes things that make image ugly
             plt.savefig(image_path, bbox_inches="tight")
+
+        if is_plot_for_response:
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png', bbox_inches="tight")
+            return buf
 
         plt.show()
 
