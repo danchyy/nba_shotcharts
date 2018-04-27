@@ -5,7 +5,7 @@ setup(
     packages=find_packages(exclude=['tests']),
 
     install_requires=['docutils>=0.3', 'pandas>=0.20.3', 'matplotlib>=2.2.2',
-                      'numpy>=1.14.2'],
+                      'numpy>=1.14.2', 'seaborn>=0.8.1'],
 
     include_package_data=True,
 
