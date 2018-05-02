@@ -16,6 +16,7 @@ class Shotchart:
         """
         Constructor of Shotchart object. It takes several arguments which will be used later to modify the
         look of final plot.
+
         :param shotchart_data: Data frame object
         :param league_average_data: Data frame object which contains league average percentages per zone.
         :param lines_color: Color of the court lines.
@@ -125,6 +126,7 @@ class Shotchart:
     def draw_court(self, ax=None):
         """
         Method which is used for drawing the court lines on shotchart image.
+
         :param ax: Ax of the plot, not necessary
         :return: axes
         """
@@ -200,6 +202,7 @@ class Shotchart:
         Method which creates bins the dataset into squared grid. This is used so that plot looks nicer than the raw
         locations plot. Along with binning the data, the percentages per zones and for each bin are calculated here
         and added to the copy of self.shotchart_data object so they can be used for plotting later.
+
         :return: Returns the copied  self.shotchart_data pandas DataFrame object with additional info about the shots.
         """
         # Binned x and y coordinates
@@ -381,7 +384,6 @@ class Shotchart:
     def plot_frequency_legend(self):
         """
         Method which is in charge of plotting the frequency
-        :return:
         """
         # Frequency
         plt.text(x=self.less_frequent_string[0], y=self.less_frequent_string[1], s=self.less_frequent_string[2],
@@ -410,6 +412,7 @@ class Shotchart:
     def plot_shotchart(self, title, should_save_file=False, image_path=None, is_plot_for_response=False):
         """
         Method which is in charge of plotting the shotchart. It creates the binned data first and plots that data.
+
         :param title: Title of the chart.
         :param should_save_file: Whether the file should be saved.
         :param image_path: Path of the file, used only when should_save_file is set to True.
@@ -473,7 +476,11 @@ class Shotchart:
 
 if __name__ == '__main__':
     from nba_stats.retrieval.api_retriever_factory import ApiRetrieverFactory
+    from nba_stats.retrieval.players_retriever import PlayersRetriever
 
+    pl_ret = PlayersRetriever()
+    player = pl_ret.get_player("Russell Westbrook")
+    print(player)
     westbrook_id = "201566"
     factory = ApiRetrieverFactory()
     retriever = factory.create_regular_shotchart_retriever_for_player(player_id=westbrook_id, season="2017-18")
