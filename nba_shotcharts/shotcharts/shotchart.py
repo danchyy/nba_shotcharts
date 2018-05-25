@@ -12,7 +12,7 @@ class Shotchart:
 
     def __init__(self, shotchart_data, league_average_data, lines_color="black", lw=2,
                  outer_lines=True, marker="ss", number_of_markers="medium", image_size="large", court_color="dark",
-                 is_for_web=False):
+                 should_save_image=False):
         """
         Constructor of Shotchart object. It takes several arguments which will be used later to modify the
         look of final plot.
@@ -22,17 +22,15 @@ class Shotchart:
         :param lines_color: Color of the court lines.
         :param lw: Widht of the court lines.
         :param outer_lines: Whether outer lines of the court should be plotted
-        :param marker: Marker which will be used, standard notation of Matplotlib's library or 'ss' for Smooth Square
-        (default value).
-        :param number_of_markers: Whether there will be small, medium or large number of markers (this variable controls
-        the number of bins).
+        :param marker: Marker which will be used, standard notation of Matplotlib's library or 'ss' for Smooth Square (default value).
+        :param number_of_markers: Whether there will be small, medium or large number of markers (this variable controls the number of bins).
         :param image_size: Size of image, can be small, medium and large.
         :param court_color: Color of the court, can be dark or light.
-        :param is_for_web: Whether shotchart will be plotted for web, if True then the parameters will be adjusted a bit.
+        :param should_save_image: If shotchart wants to be saved or created for web interface, this flag must be set to True so that image can be properly processed.
         """
         self.shotchart_data = shotchart_data
         self.league_average = league_average_data
-        self.is_for_web = is_for_web
+        self.should_save_image = should_save_image
         self.lines_color = lines_color
         self.outer_lines = outer_lines
         self.bin_number_x = 30.0
@@ -69,7 +67,7 @@ class Shotchart:
         self.font_size = 8.5  # font for text that depicts legend
         self.multiplier = 1  # Multiplier for markers
         self.title_font = 16  # Font of title is a bit bigger than regular text font
-        if self.is_for_web:
+        if self.should_save_image:
             self.font_size = 7
             self.multiplier = 0.75
         if image_size == "medium":  # Based on image size, the parameters are increased accordingly to the size
@@ -77,7 +75,7 @@ class Shotchart:
             self.font_size = self.figure_size + 1
             self.multiplier = 2.5
             self.title_font = 24
-            if self.is_for_web:
+            if self.should_save_image:
                 self.font_size = self.figure_size - 2
                 self.multiplier = 1.75
         elif image_size == "large":
@@ -85,7 +83,7 @@ class Shotchart:
             self.font_size = self.figure_size + 1
             self.multiplier = 5
             self.title_font = 32
-            if self.is_for_web:
+            if self.should_save_image:
                 self.font_size = self.figure_size - 2
                 self.multiplier = 3.25
 
@@ -460,10 +458,11 @@ class Shotchart:
         # Plotting the data owner
         plt.text(x=170, y=-58, s="Data: nba.com", color=self.text_color, fontsize=self.font_size)
 
+        plt.draw()
         # Saving figure
-        if image_path is not None:
+        if image_path is not None and self.should_save_image:
             # Bbox_inches removes things that make image ugly
-            plt.savefig(image_path, bbox_inches="tight")
+            plt.savefig(image_path, dpi=80, bbox_inches='tight')
 
         if is_plot_for_response:
             buf = io.BytesIO()
