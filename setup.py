@@ -2,14 +2,12 @@ from setuptools import setup, find_packages
 setup(
     name="nba_shotcharts",
     version="0.1",
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests', 'images']),
 
     install_requires=['docutils>=0.3', 'pandas>=0.20.3', 'matplotlib>=2.2.2',
-                      'numpy>=1.14.2', 'seaborn>=0.8.1'],
+                      'numpy>=1.14.2', 'seaborn>=0.8.1', 'nba_stats>=0.1'],
 
     include_package_data=True,
-
-    dependency_links=['https://github.com/danchyy/nba_stats'],  # package for stats retrieval
 
     # metadata for upload to PyPI
     author="Daniel Bratulic",
