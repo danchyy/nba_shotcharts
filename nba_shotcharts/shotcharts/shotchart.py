@@ -409,13 +409,12 @@ class Shotchart:
         plt.text(x=self.above_average_string[0], y=self.above_average_string[1], s=self.above_average_string[2],
                  rotation=self.above_average_string[3], color=self.text_color, fontsize=self.font_size)
 
-    def plot_shotchart(self, title, should_save_file=False, image_path=None, is_plot_for_response=False):
+    def plot_shotchart(self, title, image_path=None, is_plot_for_response=False):
         """
         Method which is in charge of plotting the shotchart. It creates the binned data first and plots that data.
 
         :param title: Title of the chart.
-        :param should_save_file: Whether the file should be saved.
-        :param image_path: Path of the file, used only when should_save_file is set to True.
+        :param image_path: Path of the file, used to save the shot chart.
         :param is_plot_for_response: If image should be plotted to response then the buffer is returned.
         :return Returns nothing, but if is_plot_for_response set to True returns buffer with plot which can be used
         for plotting to response
@@ -462,7 +461,7 @@ class Shotchart:
         plt.text(x=170, y=-58, s="Data: nba.com", color=self.text_color, fontsize=self.font_size)
 
         # Saving figure
-        if should_save_file:
+        if image_path is not None:
             # Bbox_inches removes things that make image ugly
             plt.savefig(image_path, bbox_inches="tight")
 
@@ -475,15 +474,13 @@ class Shotchart:
 
 
 if __name__ == '__main__':
-    from nba_stats.retrieval.api_retriever_factory import ApiRetrieverFactory
+    from nba_stats.retriever_factories.api_retriever_factory import ApiRetrieverFactory
     from nba_stats.retrieval.players_retriever import PlayersRetriever
 
     pl_ret = PlayersRetriever()
-    player = pl_ret.get_player("Russell Westbrook")
-    print(player)
-    westbrook_id = "201566"
+    player_id = pl_ret.get_player_id("Russell Westbrook")
     factory = ApiRetrieverFactory()
-    retriever = factory.create_regular_shotchart_retriever_for_player(player_id=westbrook_id, season="2017-18")
+    retriever = factory.create_regular_shotchart_retriever_for_player(player_id=player_id, season="2017-18")
     data = retriever.get_shotchart()
     league_average = retriever.get_league_averages()
     shotchart = Shotchart(shotchart_data=data, league_average_data=league_average)
