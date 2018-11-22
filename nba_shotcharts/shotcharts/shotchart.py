@@ -325,13 +325,15 @@ class Shotchart:
 
                 # Calculating the percentage in current zone
                 zone_percent = 0.0 if zone_key not in zones_made else float(zones_made[zone_key]) / \
-                    float(zones_counts[zone_key])
+                                                                      float(zones_counts[zone_key])
 
                 # Retrieving league average percentage for current zone
-                avg_percentage = self.league_average.loc[(self.league_average.SHOT_ZONE_BASIC == shot_zone_basic) &
-                                                         (self.league_average.SHOT_ZONE_AREA == shot_zone_area) &
-                                                         (self.league_average.SHOT_ZONE_RANGE == distance)].FG_PCT.iloc[
-                    0]  # PEPe
+                avg_percentage = self.league_average.loc[
+                    (self.league_average.SHOT_ZONE_BASIC == shot_zone_basic) &
+                    (self.league_average.SHOT_ZONE_AREA == shot_zone_area) &
+                    (self.league_average.SHOT_ZONE_RANGE == distance)].FG_PCT.iloc[
+                    0
+                ]
                 # Comparison of league average and each shot
                 shot_comparison.append(np.clip((shot_percent - avg_percentage) * 100, -10, 10))
                 # Comparison of zone and league average
@@ -388,7 +390,7 @@ class Shotchart:
                  rotation=self.less_frequent_string[3], color=self.text_color, fontsize=self.font_size)
         for size_item in self.size_legend:
             plt.scatter(x=size_item[0], y=size_item[1], s=self.marker_size_legend * self.multiplier *
-                        size_item[2], c=self.text_color, marker=self.marker)
+                                                          size_item[2], c=self.text_color, marker=self.marker)
         plt.text(x=self.more_frequent_string[0], y=self.more_frequent_string[1], s=self.more_frequent_string[2],
                  rotation=self.more_frequent_string[3], color=self.text_color, fontsize=self.font_size)
 
@@ -454,15 +456,22 @@ class Shotchart:
         plt.ylim(-65, 424)
 
         # Plotting bragging rights
-        plt.text(x=-220, y=-58, s="github.com/danchyy/nba_shotcharts", color=self.text_color, fontsize=self.font_size)
+        plt.text(
+            x=-220,
+            y=-58,
+            s="github.com/danchyy/Basketball_Analytics",
+            color=self.text_color,
+            fontsize=self.font_size
+        )
         # Plotting the data owner
         plt.text(x=170, y=-58, s="Data: nba.com", color=self.text_color, fontsize=self.font_size)
 
         plt.draw()
         # Saving figure
-        if image_path is not None and self.should_save_image:
+        if self.should_save_image:
+            final_path = image_path if image_path else "images/image.png"
             # Bbox_inches removes things that make image ugly
-            plt.savefig(image_path, dpi=80, bbox_inches='tight')
+            plt.savefig(final_path, dpi=80, bbox_inches='tight')
 
         if is_plot_for_response:
             buf = io.BytesIO()
@@ -476,11 +485,15 @@ if __name__ == '__main__':
     from nba_stats.retriever_factories.api_retriever_factory import ApiRetrieverFactory
     from nba_stats.retrieval.players_retriever import PlayersRetriever
 
-    pl_ret = PlayersRetriever()
-    player_id = pl_ret.get_player_id("Russell Westbrook")
+    from nba_api.stats.endpoints import shotchartdetail
+    from nba_api.stats.static import players
+
+    kemba_stats = players.find_players_by_full_name("kemba walker")[0]
+    kemba_id = kemba_stats['id']
     factory = ApiRetrieverFactory()
-    retriever = factory.create_regular_shotchart_retriever_for_player(player_id=player_id, season="2017-18")
+    retriever = factory.create_regular_shotchart_retriever_for_player(player_id=kemba_id, season="2018-19")
     data = retriever.get_shotchart()
     league_average = retriever.get_league_averages()
-    shotchart = Shotchart(shotchart_data=data, league_average_data=league_average)
-    shotchart.plot_shotchart("Westbrook shot chart")
+    shotchart = Shotchart(shotchart_data=data, league_average_data=league_average, image_size='medium',
+                          should_save_image=True)
+    shotchart.plot_shotchart("Kemba Walker shot chart", image_path="../image.png")
