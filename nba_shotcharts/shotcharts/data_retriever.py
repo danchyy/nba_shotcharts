@@ -1,8 +1,8 @@
 from typing import Optional
 
-from nba_api.stats.static import players, teams
+from nba_api.stats.static import players
 from nba_api.stats.endpoints.shotchartdetail import ShotChartDetail
-from utils.data_constants import CURRENT_SEASON
+from nba_shotcharts.utils.data_constants import CURRENT_SEASON
 
 
 class DataRetrieverFactory:

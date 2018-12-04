@@ -468,8 +468,8 @@ class Shotchart:
 
         plt.draw()
         # Saving figure
-        if self.should_save_image:
-            final_path = image_path if image_path else "images/image.png"
+        if self.should_save_image and image_path:
+            final_path = image_path
             # Bbox_inches removes things that make image ugly
             plt.savefig(final_path, dpi=80, bbox_inches='tight')
 

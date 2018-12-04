@@ -1,6 +1,7 @@
+import unittest
+
 from nba_stats.retrieval.api_retriever_factory import ApiRetrieverFactory
 from nba_shotcharts.shotcharts.shotchart import Shotchart
-import unittest
 
 
 # Test for whole pipeline, retrieval of data and shotchart
